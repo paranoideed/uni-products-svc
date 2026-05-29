@@ -11,7 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/netbill/restkit/pagi"
 	"github.com/paranoideed/uni-products-svc/internal/domain"
-	"github.com/paranoideed/uni-products-svc/internal/models"
 )
 
 type Repo struct {
@@ -22,7 +21,7 @@ func NewRepo(db *pgxpool.Pool) *Repo {
 	return &Repo{db: db}
 }
 
-func scanProduct(row pgx.Row) (r models.Product, err error) {
+func scanProduct(row pgx.Row) (r domain.Product, err error) {
 	err = row.Scan(
 		&r.ID,
 		&r.Name,
@@ -32,15 +31,15 @@ func scanProduct(row pgx.Row) (r models.Product, err error) {
 	)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
-		return models.Product{}, domain.ErrorProductNotFound.Raise(err)
+		return domain.Product{}, domain.ErrorProductNotFound.Raise(err)
 	case r.DeletedAt != nil:
-		return models.Product{}, domain.ErrorProductNotFound.Raise(fmt.Errorf("product is deleted"))
+		return domain.Product{}, domain.ErrorProductNotFound.Raise(fmt.Errorf("product is deleted"))
 	default:
 		return r, err
 	}
 }
 
-func (r *Repo) CreateProduct(ctx context.Context, req domain.CreateProductRequest) (models.Product, error) {
+func (r *Repo) CreateProduct(ctx context.Context, req domain.CreateProductRequest) (domain.Product, error) {
 	const q = `
 		INSERT INTO products (id, name, price)
 		VALUES ($1, $2, $3)
@@ -49,7 +48,7 @@ func (r *Repo) CreateProduct(ctx context.Context, req domain.CreateProductReques
 
 	result, err := scanProduct(r.db.QueryRow(ctx, q, uuid.New(), req.Name, req.Price))
 	if err != nil {
-		return models.Product{}, err
+		return domain.Product{}, err
 	}
 
 	return result, nil
@@ -80,7 +79,7 @@ func validSortField(f domain.SortField) string {
 	}
 }
 
-func (r *Repo) GetProducts(ctx context.Context, opts domain.GetProductsOptions) (pagi.Page[[]models.Product], error) {
+func (r *Repo) GetProducts(ctx context.Context, opts domain.GetProductsOptions) (pagi.Page[[]domain.Product], error) {
 	const filterClause = `
 		WHERE deleted_at IS NULL
 		  AND ($1::text IS NULL OR name ILIKE $1)
@@ -112,7 +111,7 @@ func (r *Repo) GetProducts(ctx context.Context, opts domain.GetProductsOptions) 
 		name, lowPrice, highPrice, startDate, endDate,
 	).Scan(&total)
 	if err != nil {
-		return pagi.Page[[]models.Product]{}, fmt.Errorf("count products: %w", err)
+		return pagi.Page[[]domain.Product]{}, fmt.Errorf("count products: %w", err)
 	}
 
 	sortDir := "DESC"
@@ -136,26 +135,26 @@ func (r *Repo) GetProducts(ctx context.Context, opts domain.GetProductsOptions) 
 
 	rows, err := r.db.Query(ctx, dataQuery, name, lowPrice, highPrice, startDate, endDate, limit, offset)
 	if err != nil {
-		return pagi.Page[[]models.Product]{}, fmt.Errorf("get products: %w", err)
+		return pagi.Page[[]domain.Product]{}, fmt.Errorf("get products: %w", err)
 	}
 	defer rows.Close()
 
-	products := make([]models.Product, 0, opts.Limit)
+	products := make([]domain.Product, 0, opts.Limit)
 
 	for rows.Next() {
-		var p models.Product
+		var p domain.Product
 		p, err = scanProduct(rows)
 		if err != nil {
-			return pagi.Page[[]models.Product]{}, err
+			return pagi.Page[[]domain.Product]{}, err
 		}
 		products = append(products, p)
 	}
 
 	if err = rows.Err(); err != nil {
-		return pagi.Page[[]models.Product]{}, fmt.Errorf("rows error: %w", err)
+		return pagi.Page[[]domain.Product]{}, fmt.Errorf("rows error: %w", err)
 	}
 
-	return pagi.Page[[]models.Product]{
+	return pagi.Page[[]domain.Product]{
 		Data:  products,
 		Page:  uint(page),
 		Size:  uint(limit),

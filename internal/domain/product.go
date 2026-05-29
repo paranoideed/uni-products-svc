@@ -3,17 +3,26 @@ package domain
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/netbill/restkit/pagi"
-	"github.com/paranoideed/uni-products-svc/internal/models"
 )
 
+type Product struct {
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	Price     float32    `json:"price"`
+	CreatedAt time.Time  `json:"created_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+}
+
+//go:generate mockery --name=Repository --inpackage --filename=mock_repository_test.go
 type Repository interface {
-	CreateProduct(ctx context.Context, req CreateProductRequest) (models.Product, error)
+	CreateProduct(ctx context.Context, req CreateProductRequest) (Product, error)
 	DeleteProduct(ctx context.Context, ID uuid.UUID) error
-	GetProducts(ctx context.Context, opts GetProductsOptions) (pagi.Page[[]models.Product], error)
+	GetProducts(ctx context.Context, opts GetProductsOptions) (pagi.Page[[]Product], error)
 }
 
 type Service struct {
@@ -29,12 +38,12 @@ type CreateProductRequest struct {
 	Price float32 `json:"price"`
 }
 
-func (s Service) CreateProduct(ctx context.Context, req CreateProductRequest) (models.Product, error) {
-	if req.Name == "" {
-		return models.Product{}, ErrorNotValidInput.Raise(errors.New("name cannot be empty"))
+func (s Service) CreateProduct(ctx context.Context, req CreateProductRequest) (Product, error) {
+	if strings.TrimSpace(req.Name) == "" {
+		return Product{}, ErrorNotValidInput.Raise(errors.New("name cannot be empty"))
 	}
-	if req.Price < 0 {
-		return models.Product{}, ErrorNotValidInput.Raise(errors.New("price cannot be negative"))
+	if req.Price <= 0 || req.Price > 100000 {
+		return Product{}, ErrorNotValidInput.Raise(errors.New("price must be between 0 and 100000"))
 	}
 
 	return s.repo.CreateProduct(ctx, req)
@@ -123,16 +132,16 @@ func WithSort(field SortField, asc bool) GetProductsOption {
 func (s Service) GetProducts(
 	ctx context.Context,
 	opts ...GetProductsOption,
-) (pagi.Page[[]models.Product], error) {
+) (pagi.Page[[]Product], error) {
 	o := ApplyGetProductsOptions(opts)
 
 	if o.LowPrice > 0 && o.HighPrice > 0 && o.LowPrice > o.HighPrice {
-		return pagi.Page[[]models.Product]{}, ErrorNotValidInput.Raise(
+		return pagi.Page[[]Product]{}, ErrorNotValidInput.Raise(
 			errors.New("low price cannot be greater than high price"),
 		)
 	}
 	if !o.StartDate.IsZero() && !o.EndDate.IsZero() && o.StartDate.After(o.EndDate) {
-		return pagi.Page[[]models.Product]{}, ErrorNotValidInput.Raise(
+		return pagi.Page[[]Product]{}, ErrorNotValidInput.Raise(
 			errors.New("start date cannot be after end date"),
 		)
 	}

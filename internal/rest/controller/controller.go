@@ -15,16 +15,15 @@ import (
 	"github.com/netbill/restkit/problems"
 	"github.com/netbill/restkit/render"
 	"github.com/paranoideed/uni-products-svc/internal/domain"
-	"github.com/paranoideed/uni-products-svc/internal/models"
 	"github.com/paranoideed/uni-products-svc/internal/rest/requests"
 	"github.com/paranoideed/uni-products-svc/internal/rest/responses"
 	"github.com/paranoideed/uni-products-svc/internal/rest/scope"
 )
 
 type core interface {
-	CreateProduct(ctx context.Context, req domain.CreateProductRequest) (models.Product, error)
+	CreateProduct(ctx context.Context, req domain.CreateProductRequest) (domain.Product, error)
 	DeleteProduct(ctx context.Context, ID uuid.UUID) error
-	GetProducts(ctx context.Context, opts ...domain.GetProductsOption) (pagi.Page[[]models.Product], error)
+	GetProducts(ctx context.Context, opts ...domain.GetProductsOption) (pagi.Page[[]domain.Product], error)
 }
 
 type Controller struct {

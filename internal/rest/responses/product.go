@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/netbill/restkit/pagi"
-	"github.com/paranoideed/uni-products-svc/internal/models"
+	"github.com/paranoideed/uni-products-svc/internal/domain"
 	"github.com/paranoideed/uni-products-svc/pkg/resources"
 )
 
-func Product(m models.Product) resources.Product {
+func Product(m domain.Product) resources.Product {
 	return resources.Product{
 		Data: resources.ProductData{
 			Id:   m.ID,
@@ -22,7 +22,7 @@ func Product(m models.Product) resources.Product {
 	}
 }
 
-func ProductsCollection(r *http.Request, page pagi.Page[[]models.Product]) resources.ProductsCollection {
+func ProductsCollection(r *http.Request, page pagi.Page[[]domain.Product]) resources.ProductsCollection {
 	data := make([]resources.ProductData, 0, len(page.Data))
 
 	for _, p := range page.Data {
