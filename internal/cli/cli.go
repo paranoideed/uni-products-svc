@@ -16,7 +16,8 @@ func Run(args []string) {
 	if err != nil {
 		panic(err)
 	}
-	log := cfg.Logger()
+	application := app.New(cfg)
+	log := application.Logger()
 
 	var (
 		service    = kingpin.New("service", "")
@@ -37,7 +38,6 @@ func Run(args []string) {
 		return
 	}
 
-	application := app.New(log, cfg)
 	switch command {
 	case serviceCmd.FullCommand():
 		err = application.Run(ctx)

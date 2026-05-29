@@ -11,7 +11,9 @@ import (
 )
 
 func (a *App) MigrateUp(ctx context.Context) error {
-	pool, err := a.config.PoolDB(ctx)
+	log := a.Logger()
+
+	pool, err := a.PoolDB(ctx)
 	if err != nil {
 		return err
 	}
@@ -21,7 +23,7 @@ func (a *App) MigrateUp(ctx context.Context) error {
 	defer func(db *sql.DB) {
 		err = db.Close()
 		if err != nil {
-			a.log.Error("failed to close database connection", "error", err)
+			log.Error("failed to close database connection", "error", err)
 			return
 		}
 	}(db)
@@ -34,13 +36,15 @@ func (a *App) MigrateUp(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to apply migrations (up)")
 	}
-	a.log.Info("applied migrations", "applied", applied)
+	log.Info("applied migrations", "applied", applied)
 
 	return nil
 }
 
 func (a *App) MigrateDown(ctx context.Context) error {
-	pool, err := a.config.PoolDB(ctx)
+	log := a.Logger()
+
+	pool, err := a.PoolDB(ctx)
 	if err != nil {
 		return err
 	}
@@ -50,7 +54,7 @@ func (a *App) MigrateDown(ctx context.Context) error {
 	defer func(db *sql.DB) {
 		err = db.Close()
 		if err != nil {
-			a.log.Error("failed to close database connection", "error", err)
+			log.Error("failed to close database connection", "error", err)
 			return
 		}
 	}(db)
@@ -63,7 +67,7 @@ func (a *App) MigrateDown(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to apply migrations (down)")
 	}
-	a.log.Info("rolled back migrations", "applied", applied)
+	log.Info("rolled back migrations", "applied", applied)
 
 	return nil
 }

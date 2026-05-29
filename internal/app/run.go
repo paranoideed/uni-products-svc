@@ -22,7 +22,9 @@ func (a *App) Run(ctx context.Context) error {
 		}()
 	}
 
-	pool, err := a.config.PoolDB(ctx)
+	log := a.Logger()
+
+	pool, err := a.PoolDB(ctx)
 	if err != nil {
 		return err
 	}
@@ -33,7 +35,7 @@ func (a *App) Run(ctx context.Context) error {
 	router := rest.NewServer(middlewares.New(), controller.New(core))
 
 	run(func() {
-		router.Run(ctx, a.log, rest.Config{
+		router.Run(ctx, log, rest.Config{
 			Port:              8000,
 			ReadTimeout:       a.config.Rest.Timeouts.Read,
 			ReadHeaderTimeout: a.config.Rest.Timeouts.ReadHeader,
@@ -42,7 +44,7 @@ func (a *App) Run(ctx context.Context) error {
 		})
 	})
 
-	a.log.Info("starting application")
+	log.Info("starting application")
 
 	wg.Wait()
 
