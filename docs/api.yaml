@@ -1,0 +1,29 @@
+openapi: 3.1.1
+info:
+  title: universe products API
+  description: API documentation for universe products service
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8001
+
+paths:
+  /products:
+    $ref: './spec/paths/Products.yaml'
+  /products/{product_id}:
+    $ref: './spec/paths/Product.yaml'
+
+components:
+  schemas:
+    Errors:
+      $ref: './spec/components/responses/Errors.yaml'
+    Product:
+      $ref: './spec/components/schemas/Product.yaml'
+    ProductsCollection:
+      $ref: './spec/components/schemas/ProductsCollection.yaml'
+    PaginationData:
+      $ref: './spec/components/schemas/PaginationData.yaml'
+    ProductData:
+      $ref: './spec/components/schemas/ProductData.yaml'
+    CreateProduct:
+      $ref: './spec/components/schemas/CreateProduct.yaml'

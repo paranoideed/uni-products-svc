@@ -1,0 +1,52 @@
+services:
+  uni-products-svc:
+    build: .
+    container_name: uni-products-svc
+    env_file: .env
+    environment:
+      - DATABASE_SQL_URL=postgres://postgres:postgres@uni-products-svc-postgres:5432/postgres
+    ports:
+      - "${REST_PORT}:8000"
+    depends_on:
+      uni-products-svc-postgres:
+        condition: service_healthy
+    networks:
+      - uni-net
+
+  uni-products-svc-postgres:
+    image: postgres:15
+    container_name: uni-products-svc-postgres
+    command: postgres -c wal_level=logical
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uni-net
+
+  uni-products-svc-swagger:
+    image: swaggerapi/swagger-ui
+    container_name: uni-products-svc-swagger
+    environment:
+      - SWAGGER_JSON=/docs/api-bundled.yaml
+    volumes:
+      - ./docs:/docs:ro
+    ports:
+      - "${SWAGGER_PORT}:8080"
+    networks:
+      - uni-net
+
+volumes:
+  pgdata:
+
+networks:
+  uni-net:

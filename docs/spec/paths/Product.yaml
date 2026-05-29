@@ -1,0 +1,36 @@
+parameters:
+  - in: path
+    name: product_id
+    required: true
+    schema:
+      type: string
+      format: uuid
+    description: product ID
+
+delete:
+  tags:
+    - products
+  summary: Delete a product
+  description: Endpoint to delete a product by its ID.
+
+  responses:
+    '204':
+      description: Product successfully deleted
+    '400':
+      description: Bad request - invalid product ID
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses/Errors.yaml'
+    '404':
+      description: Product not found
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses/Errors.yaml'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/responses/Errors.yaml'

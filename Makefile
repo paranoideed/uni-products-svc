@@ -1,0 +1,44 @@
+OPENAPI_GENERATOR := java -jar ~/openapi-generator-cli.jar
+CONFIG_FILE := ./config.yaml
+
+API_SRC := ./docs/api.yaml
+API_BUNDLED := ./docs/api-bundled.yaml
+
+RESOURCES_DIR := ./pkg/resources
+DOCS_OUTPUT_DIR := ./docs/web
+DOCS_INTERNAL_DIR := ./docs/web/internal
+
+bundle-oapi:
+	test -d $(RESOURCES_DIR) || mkdir -p $(RESOURCES_DIR)
+	test -d $(dir $(API_SRC)) || mkdir -p $(dir $(API_SRC))
+	test -d $(dir $(API_BUNDLED)) || mkdir -p $(dir $(API_BUNDLED))
+	test -d $(DOCS_OUTPUT_DIR) || mkdir -p $(DOCS_OUTPUT_DIR)
+
+	rm -rf $(DOCS_INTERNAL_DIR) && mkdir -p $(DOCS_INTERNAL_DIR)
+	rm -rf $(RESOURCES_DIR) && mkdir -p $(RESOURCES_DIR)
+	swagger-cli bundle $(API_SRC) --outfile $(API_BUNDLED) --type yaml
+
+	$(OPENAPI_GENERATOR) generate \
+		-i $(API_BUNDLED) -g go \
+		-o $(DOCS_OUTPUT_DIR) \
+		--additional-properties=packageName=resources \
+		--import-mappings uuid.UUID=github.com/google/uuid --type-mappings string+uuid=uuid.UUID
+
+	mkdir -p $(RESOURCES_DIR)
+	find $(DOCS_OUTPUT_DIR) -name '*.go' -exec mv {} $(RESOURCES_DIR)/ \;
+	find $(RESOURCES_DIR) -type f -name "*_test.go" -delete
+
+build:
+	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/uni-products-svc/main ./cmd/uni-products-svc/main.go
+
+migrate-up:
+	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/uni-products-svc/main ./cmd/uni-products-svc/main.go
+	set -a && . ./.env && set +a && KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/uni-products-svc/main migrate up
+
+migrate-down:
+	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/uni-products-svc/main ./cmd/uni-products-svc/main.go
+	set -a && . ./.env && set +a && KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/uni-products-svc/main migrate down
+
+run-server:
+	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/uni-products-svc/main ./cmd/uni-products-svc/main.go
+	set -a && . ./.env && set +a && KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/uni-products-svc/main run service

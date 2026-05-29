@@ -1,0 +1,26 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - type
+      - attributes
+    properties:
+      type:
+        type: string
+        enum: [ product ]
+      attributes:
+        type: object
+        required:
+          - name
+          - price
+        properties:
+          name:
+            type: string
+            description: "The name of the product"
+          price:
+            type: number
+            format: float64
+            description: "The price of the product"

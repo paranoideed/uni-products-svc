@@ -1,0 +1,10 @@
+log:
+  level: "debug"
+  format: "text"
+
+rest:
+  timeouts:
+    read: 15s #seconds
+    read_header: 15s #seconds
+    write: 15s #seconds
+    idle: 60s #seconds
