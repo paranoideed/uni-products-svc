@@ -54,7 +54,7 @@ services:
       - AWS_REGION=${AWS_REGION}
       - SQS_QUEUE_URL=${SQS_QUEUE_URL}
     volumes:
-      - ./debezium/application.properties:/debezium/config/application.properties
+      - ./debezium.properties:/debezium/config/application.properties
       - debezium_data:/debezium/data
     depends_on:
       uni-products-svc-postgres:

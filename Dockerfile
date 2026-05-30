@@ -10,7 +10,9 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build \
+RUN go mod vendor && \
+    CGO_ENABLED=0 GOOS=linux go build \
+    -mod=vendor \
     -o main \
     ./cmd/uni-products-svc
 
