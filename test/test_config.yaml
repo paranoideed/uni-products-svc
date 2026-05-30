@@ -1,0 +1,6 @@
+rest:
+  base_url: "http://localhost:8001"
+
+load:
+  # кількість продуктів для load тесту
+  products: 1000

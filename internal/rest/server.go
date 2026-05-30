@@ -62,7 +62,7 @@ func (s *Server) Run(ctx context.Context, log *slog.Logger, cfg Config) {
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", cfg.Port),
-		Handler:           otelhttp.NewHandler(r, "auth-svc"),
+		Handler:           otelhttp.NewHandler(r, "uni-products-svc"),
 		ReadTimeout:       cfg.ReadTimeout,
 		ReadHeaderTimeout: cfg.ReadHeaderTimeout,
 		WriteTimeout:      cfg.WriteTimeout,

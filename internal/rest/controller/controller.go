@@ -67,7 +67,7 @@ func (s *Controller) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		render.ResponseError(w, problems.InternalError())
 	default:
 		log.Info("successfully created product", "product_id", product.ID)
-		render.Response(w, http.StatusOK, responses.Product(product))
+		render.Response(w, http.StatusCreated, responses.Product(product))
 	}
 }
 
