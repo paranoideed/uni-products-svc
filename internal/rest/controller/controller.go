@@ -15,6 +15,7 @@ import (
 	"github.com/netbill/restkit/problems"
 	"github.com/netbill/restkit/render"
 	"github.com/paranoideed/uni-products-svc/internal/domain"
+	"github.com/paranoideed/uni-products-svc/internal/metrics"
 	"github.com/paranoideed/uni-products-svc/internal/rest/requests"
 	"github.com/paranoideed/uni-products-svc/internal/rest/responses"
 	"github.com/paranoideed/uni-products-svc/internal/rest/scope"
@@ -27,12 +28,14 @@ type core interface {
 }
 
 type Controller struct {
-	core core
+	core    core
+	metrics *metrics.Metrics
 }
 
-func New(core core) *Controller {
+func New(core core, m *metrics.Metrics) *Controller {
 	return &Controller{
-		core: core,
+		core:    core,
+		metrics: m,
 	}
 }
 
@@ -40,6 +43,9 @@ const operationCreateProduct = "create_product"
 
 func (s *Controller) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).With("operation", operationCreateProduct)
+
+	var err error
+	defer func() { s.metrics.RecordCreated(r.Context(), err) }()
 
 	req, err := requests.CreateProduct(r)
 	if err != nil {
@@ -70,8 +76,12 @@ const operationDeleteProduct = "delete_product"
 func (s *Controller) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).With("operation", operationDeleteProduct)
 
-	productID, err := uuid.Parse(chi.URLParam(r, "product_id"))
-	if err != nil {
+	var err error
+	defer func() { s.metrics.RecordDeleted(r.Context(), err) }()
+
+	productID, parseErr := uuid.Parse(chi.URLParam(r, "product_id"))
+	if parseErr != nil {
+		err = parseErr
 		log.Error("invalid request", "error", err)
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"path": fmt.Errorf("invalid product id format: %s, must be uuid", chi.URLParam(r, "product_id")),
@@ -103,7 +113,6 @@ func (s *Controller) GetProducts(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	var opts []domain.GetProductsOption
 
-	// Pagination
 	limit, offset := pagi.GetPagination(r)
 	page := uint(1)
 	if limit > 0 {
@@ -111,17 +120,14 @@ func (s *Controller) GetProducts(w http.ResponseWriter, r *http.Request) {
 	}
 	opts = append(opts, domain.WithPage(int(page)), domain.WithLimit(int(limit)))
 
-	// Sort
 	if sort := pagi.GetSort(r); sort != nil {
 		opts = append(opts, domain.WithSort(domain.SortField(sort.Field), sort.Ascend))
 	}
 
-	// filter[name]
 	if name := params.Get("filter[name]"); name != "" {
 		opts = append(opts, domain.WithName(name))
 	}
 
-	// filter[price][gte] / filter[price][lte]
 	var lowPrice, highPrice float64
 	if v, err := strconv.ParseFloat(params.Get("filter[price][gte]"), 64); err == nil {
 		lowPrice = v
@@ -133,7 +139,6 @@ func (s *Controller) GetProducts(w http.ResponseWriter, r *http.Request) {
 		opts = append(opts, domain.WithPriceRange(lowPrice, highPrice))
 	}
 
-	// filter[created_at][gte] / filter[created_at][lte]
 	var startDate, endDate time.Time
 	if t, err := time.Parse(time.RFC3339, params.Get("filter[created_at][gte]")); err == nil {
 		startDate = t

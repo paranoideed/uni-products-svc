@@ -46,7 +46,7 @@ func Run(args []string) {
 	case migrateDownCmd.FullCommand():
 		err = application.MigrateDown(ctx)
 	default:
-		log.Error("unknown command %s", command)
+		log.Error("unknown command", "command", command)
 		return
 	}
 	if err != nil {

@@ -5,6 +5,8 @@ services:
     env_file: .env
     environment:
       - DATABASE_SQL_URL=postgres://postgres:postgres@uni-products-svc-postgres:5432/postgres
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://uni-otel-collector:4318
+      - OTEL_SERVICE_NAME=uni-products-svc
     ports:
       - "${REST_PORT}:8000"
     depends_on:
@@ -68,3 +70,5 @@ volumes:
 
 networks:
   uni-net:
+    name: uni-net
+    external: true

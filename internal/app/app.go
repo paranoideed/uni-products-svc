@@ -9,6 +9,8 @@ import (
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.opentelemetry.io/contrib/bridges/otelslog"
+
 	"github.com/paranoideed/uni-products-svc/internal/config"
 )
 
@@ -18,9 +20,18 @@ type App struct {
 }
 
 func New(cfg *config.Config) *App {
-	a := &App{config: cfg}
+	return &App{config: cfg}
+}
+
+func (a *App) Logger() *slog.Logger {
+	if a.log == nil {
+		a.initLogger()
+	}
+	return a.log
+}
+
+func (a *App) initLogger() {
 	a.log = a.buildLogger()
-	return a
 }
 
 func (a *App) PoolDB(ctx context.Context) (*pgxpool.Pool, error) {
@@ -39,10 +50,6 @@ func (a *App) PoolDB(ctx context.Context) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-func (a *App) Logger() *slog.Logger {
-	return a.log
-}
-
 func (a *App) buildLogger() *slog.Logger {
 	lvl := slog.LevelInfo
 	switch strings.ToLower(strings.TrimSpace(a.config.Log.Level)) {
@@ -54,17 +61,55 @@ func (a *App) buildLogger() *slog.Logger {
 		lvl = slog.LevelError
 	}
 
-	var handler slog.Handler
+	var stdoutHandler slog.Handler
 	switch strings.ToLower(strings.TrimSpace(a.config.Log.Format)) {
 	case "json":
-		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: lvl,
-		})
+		stdoutHandler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: lvl})
 	default:
-		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: lvl,
-		})
+		stdoutHandler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: lvl})
 	}
 
-	return slog.New(handler)
+	otelHandler := otelslog.NewHandler("uni-products-svc")
+
+	return slog.New(&multiHandler{handlers: []slog.Handler{stdoutHandler, otelHandler}})
+}
+
+type multiHandler struct {
+	handlers []slog.Handler
+}
+
+func (m *multiHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	for _, h := range m.handlers {
+		if h.Enabled(ctx, level) {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *multiHandler) Handle(ctx context.Context, r slog.Record) error {
+	for _, h := range m.handlers {
+		if h.Enabled(ctx, r.Level) {
+			if err := h.Handle(ctx, r.Clone()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (m *multiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	newHandlers := make([]slog.Handler, len(m.handlers))
+	for i, h := range m.handlers {
+		newHandlers[i] = h.WithAttrs(attrs)
+	}
+	return &multiHandler{handlers: newHandlers}
+}
+
+func (m *multiHandler) WithGroup(name string) slog.Handler {
+	newHandlers := make([]slog.Handler, len(m.handlers))
+	for i, h := range m.handlers {
+		newHandlers[i] = h.WithGroup(name)
+	}
+	return &multiHandler{handlers: newHandlers}
 }
