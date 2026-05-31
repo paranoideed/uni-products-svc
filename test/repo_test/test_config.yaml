@@ -1,0 +1,2 @@
+db:
+  url: "postgresql://postgres:postgres@localhost:7001/postgres?sslmode=disable"

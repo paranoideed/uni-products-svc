@@ -3,8 +3,17 @@ log:
   format: "text"
 
 rest:
+  port: 8000
   timeouts:
     read: 15s #seconds
     read_header: 15s #seconds
     write: 15s #seconds
     idle: 60s #seconds
+
+postgres:
+  host: "$POSTGRES_HOST"
+  port: "$POSTGRES_PORT"
+  user: "$POSTGRES_USER"
+  password: "$POSTGRES_PASSWORD"
+  db: "$POSTGRES_DB"
+  sslmode: "disable"

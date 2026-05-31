@@ -15,24 +15,30 @@ import (
 	"github.com/netbill/restkit/problems"
 	"github.com/netbill/restkit/render"
 	"github.com/paranoideed/uni-products-svc/internal/domain"
-	"github.com/paranoideed/uni-products-svc/internal/metrics"
 	"github.com/paranoideed/uni-products-svc/internal/rest/requests"
 	"github.com/paranoideed/uni-products-svc/internal/rest/responses"
 	"github.com/paranoideed/uni-products-svc/internal/rest/scope"
 )
 
+//go:generate mockery --name=core --inpackage --filename=mock_core_test.go --unroll-variadic=false
 type core interface {
 	CreateProduct(ctx context.Context, req domain.CreateProductRequest) (domain.Product, error)
 	DeleteProduct(ctx context.Context, ID uuid.UUID) error
 	GetProducts(ctx context.Context, opts ...domain.GetProductsOption) (pagi.Page[[]domain.Product], error)
 }
 
-type Controller struct {
-	core    core
-	metrics *metrics.Metrics
+//go:generate mockery --name=metrics --inpackage --filename=mock_metrics_test.go --unroll-variadic=false
+type metrics interface {
+	RecordCreated(ctx context.Context, err error)
+	RecordDeleted(ctx context.Context, err error)
 }
 
-func New(core core, m *metrics.Metrics) *Controller {
+type Controller struct {
+	core    core
+	metrics metrics
+}
+
+func New(core core, m metrics) *Controller {
 	return &Controller{
 		core:    core,
 		metrics: m,
@@ -41,12 +47,15 @@ func New(core core, m *metrics.Metrics) *Controller {
 
 const operationCreateProduct = "create_product"
 
+const maxBodySize = 1 << 20 // 1MB
+
 func (s *Controller) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).With("operation", operationCreateProduct)
 
 	var err error
 	defer func() { s.metrics.RecordCreated(r.Context(), err) }()
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
 	req, err := requests.CreateProduct(r)
 	if err != nil {
 		log.Error("invalid request", "error", err)
@@ -113,7 +122,11 @@ func (s *Controller) GetProducts(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	var opts []domain.GetProductsOption
 
+	const maxPageLimit = 100
 	limit, offset := pagi.GetPagination(r)
+	if limit > maxPageLimit {
+		limit = maxPageLimit
+	}
 	page := uint(1)
 	if limit > 0 {
 		page = offset/limit + 1

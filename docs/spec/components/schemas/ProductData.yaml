@@ -23,7 +23,7 @@ properties:
         description: "The name of the product"
       price:
         type: number
-        format: float32
+        format: double
         description: "The price of the product"
       created_at:
         type: string

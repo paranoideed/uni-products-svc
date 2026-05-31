@@ -25,7 +25,7 @@ type ProductDataAttributes struct {
 	// The name of the product
 	Name string `json:"name"`
 	// The price of the product
-	Price float32 `json:"price"`
+	Price float64 `json:"price"`
 	// The date and time when the product was created
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -36,7 +36,7 @@ type _ProductDataAttributes ProductDataAttributes
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewProductDataAttributes(name string, price float32, createdAt time.Time) *ProductDataAttributes {
+func NewProductDataAttributes(name string, price float64, createdAt time.Time) *ProductDataAttributes {
 	this := ProductDataAttributes{}
 	this.Name = name
 	this.Price = price
@@ -77,9 +77,9 @@ func (o *ProductDataAttributes) SetName(v string) {
 }
 
 // GetPrice returns the Price field value
-func (o *ProductDataAttributes) GetPrice() float32 {
+func (o *ProductDataAttributes) GetPrice() float64 {
 	if o == nil {
-		var ret float32
+		var ret float64
 		return ret
 	}
 
@@ -88,7 +88,7 @@ func (o *ProductDataAttributes) GetPrice() float32 {
 
 // GetPriceOk returns a tuple with the Price field value
 // and a boolean to check if the value has been set.
-func (o *ProductDataAttributes) GetPriceOk() (*float32, bool) {
+func (o *ProductDataAttributes) GetPriceOk() (*float64, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -96,7 +96,7 @@ func (o *ProductDataAttributes) GetPriceOk() (*float32, bool) {
 }
 
 // SetPrice sets field value
-func (o *ProductDataAttributes) SetPrice(v float32) {
+func (o *ProductDataAttributes) SetPrice(v float64) {
 	o.Price = v
 }
 

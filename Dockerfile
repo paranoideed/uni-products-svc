@@ -5,9 +5,6 @@ ARG GO_VERSION=1.25.7
 FROM golang:${GO_VERSION}-alpine AS builder
 
 WORKDIR /service
-COPY go.mod go.sum ./
-RUN go mod download
-
 COPY . .
 
 RUN go mod vendor && \

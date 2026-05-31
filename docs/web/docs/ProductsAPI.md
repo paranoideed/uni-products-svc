@@ -35,8 +35,8 @@ func main() {
 	pageLimit := int32(56) // int32 | Max number of items to return (optional) (default to 20)
 	pageOffset := int32(56) // int32 | Number of items to skip (optional) (default to 0)
 	filterName := "filterName_example" // string | Filter by product name (partial match) (optional)
-	filterPriceGte := float32(3.4) // float32 | Filter products with price greater than or equal to this value (optional)
-	filterPriceLte := float32(3.4) // float32 | Filter products with price less than or equal to this value (optional)
+	filterPriceGte := float64(1.2) // float64 | Filter products with price greater than or equal to this value (optional)
+	filterPriceLte := float64(1.2) // float64 | Filter products with price less than or equal to this value (optional)
 	filterCreatedAtGte := time.Now() // time.Time | Filter products created at or after this timestamp (RFC3339) (optional)
 	filterCreatedAtLte := time.Now() // time.Time | Filter products created at or before this timestamp (RFC3339) (optional)
 	sort := "sort_example" // string | Sort field and direction. Prefix `-` means descending order. Example: `sort=price` (cheapest first), `sort=-price` (most expensive first)  (optional) (default to "-created_at")
@@ -67,8 +67,8 @@ Name | Type | Description  | Notes
  **pageLimit** | **int32** | Max number of items to return | [default to 20]
  **pageOffset** | **int32** | Number of items to skip | [default to 0]
  **filterName** | **string** | Filter by product name (partial match) | 
- **filterPriceGte** | **float32** | Filter products with price greater than or equal to this value | 
- **filterPriceLte** | **float32** | Filter products with price less than or equal to this value | 
+ **filterPriceGte** | **float64** | Filter products with price greater than or equal to this value | 
+ **filterPriceLte** | **float64** | Filter products with price less than or equal to this value | 
  **filterCreatedAtGte** | **time.Time** | Filter products created at or after this timestamp (RFC3339) | 
  **filterCreatedAtLte** | **time.Time** | Filter products created at or before this timestamp (RFC3339) | 
  **sort** | **string** | Sort field and direction. Prefix &#x60;-&#x60; means descending order. Example: &#x60;sort&#x3D;price&#x60; (cheapest first), &#x60;sort&#x3D;-price&#x60; (most expensive first)  | [default to &quot;-created_at&quot;]
@@ -112,7 +112,7 @@ import (
 )
 
 func main() {
-	createProduct := *openapiclient.NewCreateProduct(*openapiclient.NewCreateProductData("Type_example", *openapiclient.NewCreateProductDataAttributes("Name_example", float32(123)))) // CreateProduct | 
+	createProduct := *openapiclient.NewCreateProduct(*openapiclient.NewCreateProductData("Type_example", *openapiclient.NewCreateProductDataAttributes("Name_example", float64(123)))) // CreateProduct | 
 
 	configuration := openapiclient.NewConfiguration()
 	apiClient := openapiclient.NewAPIClient(configuration)

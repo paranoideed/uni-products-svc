@@ -5,14 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** | The name of the product | 
-**Price** | **float32** | The price of the product | 
+**Price** | **float64** | The price of the product | 
 **CreatedAt** | **time.Time** | The date and time when the product was created | 
 
 ## Methods
 
 ### NewProductDataAttributes
 
-`func NewProductDataAttributes(name string, price float32, createdAt time.Time, ) *ProductDataAttributes`
+`func NewProductDataAttributes(name string, price float64, createdAt time.Time, ) *ProductDataAttributes`
 
 NewProductDataAttributes instantiates a new ProductDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -49,20 +49,20 @@ SetName sets Name field to given value.
 
 ### GetPrice
 
-`func (o *ProductDataAttributes) GetPrice() float32`
+`func (o *ProductDataAttributes) GetPrice() float64`
 
 GetPrice returns the Price field if non-nil, zero value otherwise.
 
 ### GetPriceOk
 
-`func (o *ProductDataAttributes) GetPriceOk() (*float32, bool)`
+`func (o *ProductDataAttributes) GetPriceOk() (*float64, bool)`
 
 GetPriceOk returns a tuple with the Price field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetPrice
 
-`func (o *ProductDataAttributes) SetPrice(v float32)`
+`func (o *ProductDataAttributes) SetPrice(v float64)`
 
 SetPrice sets Price field to given value.
 

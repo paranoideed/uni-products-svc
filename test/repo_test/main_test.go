@@ -1,39 +1,40 @@
-package test
+package repo_test
 
 import (
-	"net/http"
+	"context"
 	"os"
 	"testing"
-	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/paranoideed/uni-products-svc/internal/repo"
 	"go.yaml.in/yaml/v3"
 )
 
 type config struct {
-	REST struct {
-		BaseURL string `yaml:"base_url"`
-	} `yaml:"rest"`
-
-	Load struct {
-		Products int `yaml:"products"`
-	} `yaml:"load"`
+	DB struct {
+		URL string `yaml:"url"`
+	} `yaml:"db"`
 }
 
-var (
-	testCfg    *config
-	testClient *http.Client
-)
+var testRepo *repo.Repo
 
 func TestMain(m *testing.M) {
 	cfg, err := loadConfig("test_config.yaml")
 	if err != nil {
 		panic("load test config: " + err.Error())
 	}
-	testCfg = cfg
 
-	testClient = &http.Client{
-		Timeout: 10 * time.Second,
+	pool, err := pgxpool.New(context.Background(), cfg.DB.URL)
+	if err != nil {
+		panic("connect to db: " + err.Error())
 	}
+	defer pool.Close()
+
+	if err = pool.Ping(context.Background()); err != nil {
+		panic("ping db: " + err.Error())
+	}
+
+	testRepo = repo.NewRepo(pool)
 
 	os.Exit(m.Run())
 }

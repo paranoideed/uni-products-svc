@@ -26,15 +26,18 @@ type Middlewares interface {
 type Server struct {
 	middlewares Middlewares
 	controller  Controller
+	readyCheck  func(ctx context.Context) error
 }
 
 func NewServer(
 	middlewares Middlewares,
 	controller Controller,
+	readyCheck func(ctx context.Context) error,
 ) *Server {
 	return &Server{
 		middlewares: middlewares,
 		controller:  controller,
+		readyCheck:  readyCheck,
 	}
 }
 
@@ -53,6 +56,19 @@ func (s *Server) Run(ctx context.Context, log *slog.Logger, cfg Config) {
 		s.middlewares.Logger(log),
 		s.middlewares.CorsDocs(),
 	)
+
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		if err := s.readyCheck(r.Context()); err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
 
 	r.Route("/products", func(r chi.Router) {
 		r.Get("/", s.controller.GetProducts)

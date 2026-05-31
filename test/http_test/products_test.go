@@ -1,4 +1,4 @@
-package test
+package http_test
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ type createProductRequest struct {
 		Type       string `json:"type"`
 		Attributes struct {
 			Name  string  `json:"name"`
-			Price float32 `json:"price"`
+			Price float64 `json:"price"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
@@ -29,7 +29,7 @@ type productResponse struct {
 		Type       string    `json:"type"`
 		Attributes struct {
 			Name  string  `json:"name"`
-			Price float32 `json:"price"`
+			Price float64 `json:"price"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
@@ -39,11 +39,10 @@ func TestCreateProducts(t *testing.T) {
 	base := testCfg.REST.BaseURL
 
 	for i := range n {
-		i := i
 		t.Run(fmt.Sprintf("product_%d", i+1), func(t *testing.T) {
 			t.Parallel()
 
-			price := float32(rand.IntN(99999)+1) + rand.Float32()
+			price := float64(rand.IntN(99999)+1) + rand.Float64()
 			product := createProduct(t, base, fmt.Sprintf("product-%d", i+1), price)
 
 			assert.Equal(t, fmt.Sprintf("product-%d", i+1), product.Data.Attributes.Name)
@@ -58,11 +57,10 @@ func TestCreateAndDeleteProducts(t *testing.T) {
 	base := testCfg.REST.BaseURL
 
 	for i := range n {
-		i := i
 		t.Run(fmt.Sprintf("product_%d", i+1), func(t *testing.T) {
 			t.Parallel()
 
-			price := float32(rand.IntN(99999) + 1)
+			price := float64(rand.IntN(99999) + 1)
 			product := createProduct(t, base, fmt.Sprintf("product-%d", i+1), price)
 
 			deleteProduct(t, base, product.Data.Id)
@@ -70,7 +68,7 @@ func TestCreateAndDeleteProducts(t *testing.T) {
 	}
 }
 
-func createProduct(t *testing.T, base, name string, price float32) productResponse {
+func createProduct(t *testing.T, base, name string, price float64) productResponse {
 	t.Helper()
 
 	var body createProductRequest

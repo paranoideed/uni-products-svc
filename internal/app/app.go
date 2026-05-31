@@ -34,7 +34,7 @@ func (a *App) initLogger() {
 }
 
 func (a *App) PoolDB(ctx context.Context) (*pgxpool.Pool, error) {
-	poolCfg, err := pgxpool.ParseConfig(os.Getenv("DATABASE_SQL_URL"))
+	poolCfg, err := pgxpool.ParseConfig(a.config.Postgres.DSN())
 	if err != nil {
 		return nil, fmt.Errorf("parse database config: %w", err)
 	}

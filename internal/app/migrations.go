@@ -21,10 +21,8 @@ func (a *App) MigrateUp(ctx context.Context) error {
 
 	db := stdlib.OpenDBFromPool(pool)
 	defer func(db *sql.DB) {
-		err = db.Close()
-		if err != nil {
+		if err := db.Close(); err != nil {
 			log.Error("failed to close database connection", "error", err)
-			return
 		}
 	}(db)
 
@@ -52,10 +50,8 @@ func (a *App) MigrateDown(ctx context.Context) error {
 
 	db := stdlib.OpenDBFromPool(pool)
 	defer func(db *sql.DB) {
-		err = db.Close()
-		if err != nil {
+		if err := db.Close(); err != nil {
 			log.Error("failed to close database connection", "error", err)
-			return
 		}
 	}(db)
 

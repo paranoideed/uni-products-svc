@@ -31,8 +31,8 @@ type ApiProductsGetRequest struct {
 	pageLimit *int32
 	pageOffset *int32
 	filterName *string
-	filterPriceGte *float32
-	filterPriceLte *float32
+	filterPriceGte *float64
+	filterPriceLte *float64
 	filterCreatedAtGte *time.Time
 	filterCreatedAtLte *time.Time
 	sort *string
@@ -57,13 +57,13 @@ func (r ApiProductsGetRequest) FilterName(filterName string) ApiProductsGetReque
 }
 
 // Filter products with price greater than or equal to this value
-func (r ApiProductsGetRequest) FilterPriceGte(filterPriceGte float32) ApiProductsGetRequest {
+func (r ApiProductsGetRequest) FilterPriceGte(filterPriceGte float64) ApiProductsGetRequest {
 	r.filterPriceGte = &filterPriceGte
 	return r
 }
 
 // Filter products with price less than or equal to this value
-func (r ApiProductsGetRequest) FilterPriceLte(filterPriceLte float32) ApiProductsGetRequest {
+func (r ApiProductsGetRequest) FilterPriceLte(filterPriceLte float64) ApiProductsGetRequest {
 	r.filterPriceLte = &filterPriceLte
 	return r
 }

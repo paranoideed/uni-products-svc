@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,10 +12,10 @@ import (
 	"github.com/paranoideed/uni-products-svc/internal/config"
 )
 
-func Run(args []string) {
+func Run(args []string) error {
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 	application := app.New(cfg)
 	log := application.Logger()
@@ -34,8 +35,7 @@ func Run(args []string) {
 
 	command, err := service.Parse(args[1:])
 	if err != nil {
-		log.Error("Error parsing command", "command", command, "err", err)
-		return
+		return fmt.Errorf("error parsing command: %w", err)
 	}
 
 	switch command {
@@ -46,13 +46,13 @@ func Run(args []string) {
 	case migrateDownCmd.FullCommand():
 		err = application.MigrateDown(ctx)
 	default:
-		log.Error("unknown command", "command", command)
-		return
+		return fmt.Errorf("unknown command: %s", command)
 	}
 	if err != nil {
-		log.Error("Error executing command", "command", command, "err", err)
-		return
+		log.Error("error executing command", "command", command, "err", err)
+		return err
 	}
 
 	log.Info("all processes finished successfully")
+	return nil
 }

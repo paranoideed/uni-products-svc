@@ -4,7 +4,11 @@ services:
     container_name: uni-products-svc
     env_file: .env
     environment:
-      - DATABASE_SQL_URL=postgres://postgres:postgres@uni-products-svc-postgres:5432/postgres
+      - POSTGRES_HOST=uni-products-svc-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://uni-otel-collector:4318
       - OTEL_SERVICE_NAME=uni-products-svc
     ports:
@@ -55,6 +59,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
       - SQS_QUEUE_URL=${SQS_QUEUE_URL}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./debezium.properties:/debezium/config/application.properties
       - debezium_data:/debezium/data

@@ -13,7 +13,7 @@ import (
 type Product struct {
 	ID        uuid.UUID  `json:"id"`
 	Name      string     `json:"name"`
-	Price     float32    `json:"price"`
+	Price     float64    `json:"price"`
 	CreatedAt time.Time  `json:"created_at"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
@@ -35,7 +35,7 @@ func NewService(repo Repository) *Service {
 
 type CreateProductRequest struct {
 	Name  string  `json:"name"`
-	Price float32 `json:"price"`
+	Price float64 `json:"price"`
 }
 
 func (s Service) CreateProduct(ctx context.Context, req CreateProductRequest) (Product, error) {

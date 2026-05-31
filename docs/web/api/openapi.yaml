@@ -46,7 +46,7 @@ paths:
         name: "filter[price][gte]"
         required: false
         schema:
-          format: float
+          format: double
           minimum: 0
           type: number
         style: form
@@ -56,7 +56,7 @@ paths:
         name: "filter[price][lte]"
         required: false
         schema:
-          format: float
+          format: double
           minimum: 0
           type: number
         style: form
@@ -364,7 +364,7 @@ components:
           type: string
         price:
           description: The price of the product
-          format: float32
+          format: double
           type: number
         created_at:
           description: The date and time when the product was created
@@ -384,7 +384,7 @@ components:
           type: string
         price:
           description: The price of the product
-          format: float64
+          format: double
           type: number
       required:
       - name

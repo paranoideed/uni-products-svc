@@ -42,28 +42,20 @@ func (a *App) Run(ctx context.Context) error {
 		return err
 	}
 
-	router := rest.NewServer(middlewares.New(), controller.New(core, m))
+	router := rest.NewServer(middlewares.New(), controller.New(core, m), pool.Ping)
+
+	log.Info("starting application")
 
 	var wg sync.WaitGroup
-	run := func(f func()) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			f()
-		}()
-	}
-
-	run(func() {
+	wg.Go(func() {
 		router.Run(ctx, log, rest.Config{
-			Port:              8000,
+			Port:              a.config.Rest.Port,
 			ReadTimeout:       a.config.Rest.Timeouts.Read,
 			ReadHeaderTimeout: a.config.Rest.Timeouts.ReadHeader,
 			WriteTimeout:      a.config.Rest.Timeouts.Write,
 			IdleTimeout:       a.config.Rest.Timeouts.Idle,
 		})
 	})
-
-	log.Info("starting application")
 
 	wg.Wait()
 
